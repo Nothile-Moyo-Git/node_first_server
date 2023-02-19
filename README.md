@@ -10,12 +10,20 @@
 `Read`
 `Eval (evaluate)`
 `Print (usually to console)`
-`Loop (Execute again)`
+`Loop (as long as listeners exist)`
+
+The "event loop" is a concept in JavaScript which refers to the stack.
+
+The Stack is data allocated in memory which has a `heap` inside of it. A `heap` refers to a large collection of memory which is mostly unstructured.
+
+As the code is parsed (read), each function call to be executed is is placed onto the stack as a frame. Once there are no more frames to stack, the runtime will then execute the functions, popping each frame in the stack. Once the stack is empty, the event loop is complete.
+
+However, is an active listener is running, then this triggers the event loop each time an event occurs. This could be a get request for example.
 
 *Node has key in-built modules used to create a server*
 
 `http` : The HTTP module. Used to spin up insecure servers.
 `https` : The HTTPS module. Used to spin up servers with SSL Encryption.
 `fs` : The File System module. Used to create and edit files in node.
-`path` : The FilePath module. The syntax for including the Path module in your application.
-`os` : The Operating System module. Returns information about the computers operating system
+`path` : The FilePath module. This module provides utilities for working with file and directory paths.
+`os` : The Operating System module. Returns information about the computers operating system.
