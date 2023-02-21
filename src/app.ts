@@ -1,6 +1,7 @@
 // Import the required module in order to spin up a local http server
 import http from "http";
 import fs from "fs";
+import qs from "querystring";
 
 // Create a request listener to handle requests to the described endpoint
 // This function now runs for every request
@@ -25,7 +26,14 @@ const requestListener = (request : http.IncomingMessage, response : http.ServerR
         response.write('<html>');
         response.write('<head><title>Enter Message</title></head>');
         response.write('<body><form action="/message" method="POST">');
-        response.write('<input type="text" name="message"><button type="submit">Send</button></input>');
+
+        response.write('<label for="title">Title</label>');
+        response.write('<input type="text" name="title"/></br>');
+
+        response.write('<label for="message">Message</label>');
+        response.write('<input type="text" name="message"/></br>');
+
+        response.write('<button type="submit">Send</button>');
         response.write('</form></body>');
         response.write('</html>');
 
@@ -39,13 +47,29 @@ const requestListener = (request : http.IncomingMessage, response : http.ServerR
     // Check if we're on the other URL and also make sure we're sending a post request
     if ( url === "/message"  && method === "POST" ) {
 
-        request.on('data', (chunk) => {
+        // Read the data in the stream that we pass through
+        request.on('data', (chunk : Buffer) => {
+
             console.log("Request is here");
-            console.log(chunk);
+            console.log( qs.parse(chunk.toString()) );
+            console.log("\n\n");
+        });
+
+        // When the post ends, get the string out of the buffer with queryString
+        request.on('end', () => {
+            console.log("Parsing the text has finished");
+        });
+
+        // If there's an error
+        request.on('error', () => {
+            console.log("Output error");
+            console.log("\n\n");
         });
 
         fs.writeFileSync('message.txt', "DUMMY");
         response.statusCode = 302;
+
+
         return response.end();
     }
 

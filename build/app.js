@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // Import the required module in order to spin up a local http server
 var http_1 = __importDefault(require("http"));
 var fs_1 = __importDefault(require("fs"));
+var querystring_1 = __importDefault(require("querystring"));
 // Create a request listener to handle requests to the described endpoint
 // This function now runs for every request
 var requestListener = function (request, response) {
@@ -23,7 +24,11 @@ var requestListener = function (request, response) {
         response.write('<html>');
         response.write('<head><title>Enter Message</title></head>');
         response.write('<body><form action="/message" method="POST">');
-        response.write('<input type="text" name="message"><button type="submit">Send</button></input>');
+        response.write('<label for="title">Title</label>');
+        response.write('<input type="text" name="title"/></br>');
+        response.write('<label for="message">Message</label>');
+        response.write('<input type="text" name="message"/></br>');
+        response.write('<button type="submit">Send</button>');
         response.write('</form></body>');
         response.write('</html>');
         // Redirect after the form is submitted
@@ -32,9 +37,20 @@ var requestListener = function (request, response) {
     }
     // Check if we're on the other URL and also make sure we're sending a post request
     if (url === "/message" && method === "POST") {
+        // Read the data in the stream that we pass through
         request.on('data', function (chunk) {
             console.log("Request is here");
-            console.log(chunk);
+            console.log(querystring_1.default.parse(chunk.toString()));
+            console.log("\n\n");
+        });
+        // When the post ends, get the string out of the buffer with queryString
+        request.on('end', function () {
+            console.log("Parsing the text has finished");
+        });
+        // If there's an error
+        request.on('error', function () {
+            console.log("Output error");
+            console.log("\n\n");
         });
         fs_1.default.writeFileSync('message.txt', "DUMMY");
         response.statusCode = 302;
