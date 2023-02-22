@@ -3,14 +3,18 @@ import http from "http";
 import fs from "fs";
 import qs from "querystring";
 
+// Interface for the data so we know what properties from the form to expect
+interface Data {
+    title : string,
+    message : string
+}
+
 // Create a request listener to handle requests to the described endpoint
 // This function now runs for every request
 const requestListener = (request : http.IncomingMessage, response : http.ServerResponse) => {
 
     // Testing output from the request object since it contains too much data on its own
     // console.log(request.url, request.method, request.headers);
-    // console.log(request.headers);
-
     const url = request.url;
     const method = request.method;
 
@@ -23,6 +27,7 @@ const requestListener = (request : http.IncomingMessage, response : http.ServerR
 
         // Write some data to the response in chunks
         // Eventually, this will be replaced with EJS
+        // The form action property will determine the url your form will submit to and should be defined
         response.write('<html>');
         response.write('<head><title>Enter Message</title></head>');
         response.write('<body><form action="/message" method="POST">');
@@ -37,8 +42,6 @@ const requestListener = (request : http.IncomingMessage, response : http.ServerR
         response.write('</form></body>');
         response.write('</html>');
 
-        // Redirect after the form is submitted
-
         // Exit out of the function if we reach this point
         return response.end();
 
@@ -47,28 +50,38 @@ const requestListener = (request : http.IncomingMessage, response : http.ServerR
     // Check if we're on the other URL and also make sure we're sending a post request
     if ( url === "/message"  && method === "POST" ) {
 
+        // Initialise data so we can update it with our chunk buffer
+        let data : Data | any = {title : "", message : ""};
+
         // Read the data in the stream that we pass through
         request.on('data', (chunk : Buffer) => {
 
-            console.log("Request is here");
-            console.log( qs.parse(chunk.toString()) );
-            console.log("\n\n");
+            // We use queryStream to parse the chunk into an array of prototype objects
+            data = qs.parse(chunk.toString());
+
+            // Append our two inputs to the file
+            // We do this by adding the property from data and then inserting a new line with each entry
+            fs.appendFileSync("message.txt", `${data.title} \r\n`);
+
+            fs.appendFile("message.txt", `${data.message} \r\n`, (error) => {
+                console.log(`Error: ${error}`);
+            });
+
         });
 
         // When the post ends, get the string out of the buffer with queryString
         request.on('end', () => {
             console.log("Parsing the text has finished");
+            console.log("\n");
         });
 
-        // If there's an error
+        // If there's an error, showcase it in the query
         request.on('error', () => {
             console.log("Output error");
-            console.log("\n\n");
+            console.log("\n");
         });
 
-        fs.writeFileSync('message.txt', "DUMMY");
         response.statusCode = 302;
-
 
         return response.end();
     }

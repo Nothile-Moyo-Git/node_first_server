@@ -12,7 +12,6 @@ var querystring_1 = __importDefault(require("querystring"));
 var requestListener = function (request, response) {
     // Testing output from the request object since it contains too much data on its own
     // console.log(request.url, request.method, request.headers);
-    // console.log(request.headers);
     var url = request.url;
     var method = request.method;
     if (url === "/") {
@@ -21,6 +20,7 @@ var requestListener = function (request, response) {
         response.setHeader('Content-Type', 'text/html');
         // Write some data to the response in chunks
         // Eventually, this will be replaced with EJS
+        // The form action property will determine the url your form will submit to and should be defined
         response.write('<html>');
         response.write('<head><title>Enter Message</title></head>');
         response.write('<body><form action="/message" method="POST">');
@@ -31,28 +31,36 @@ var requestListener = function (request, response) {
         response.write('<button type="submit">Send</button>');
         response.write('</form></body>');
         response.write('</html>');
-        // Redirect after the form is submitted
         // Exit out of the function if we reach this point
         return response.end();
     }
     // Check if we're on the other URL and also make sure we're sending a post request
     if (url === "/message" && method === "POST") {
+        // Initialise data so we can update it with our chunk buffer
+        var data_1 = { title: "", message: "" };
         // Read the data in the stream that we pass through
         request.on('data', function (chunk) {
+            // We use queryStream to parse the chunk into an array of prototype objects
             console.log("Request is here");
-            console.log(querystring_1.default.parse(chunk.toString()));
-            console.log("\n\n");
+            data_1 = querystring_1.default.parse(chunk.toString());
+            console.log(data_1);
+            console.log("\n");
+            // Append our two inputs to the file
+            // We do this by adding the property from data and then inserting a new line with each entry
+            fs_1.default.appendFileSync("message.txt", "".concat(data_1.title, " \r\n"));
+            fs_1.default.appendFile("message.txt", "".concat(data_1.message, " \r\n"), function (error) {
+                console.log("Error: ".concat(error));
+            });
         });
         // When the post ends, get the string out of the buffer with queryString
         request.on('end', function () {
             console.log("Parsing the text has finished");
         });
-        // If there's an error
+        // If there's an error, showcase it in the query
         request.on('error', function () {
             console.log("Output error");
-            console.log("\n\n");
+            console.log("\n");
         });
-        fs_1.default.writeFileSync('message.txt', "DUMMY");
         response.statusCode = 302;
         return response.end();
     }
