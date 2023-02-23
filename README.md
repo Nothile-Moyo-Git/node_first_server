@@ -27,3 +27,10 @@ However, is an active listener is running, then this triggers the event loop eac
 `fs` : The File System module. Used to create and edit files in node.
 `path` : The FilePath module. This module provides utilities for working with file and directory paths.
 `os` : The Operating System module. Returns information about the computers operating system.
+
+*Streams and buffers*
+A stream is usually a stream of data being parsed by the server. This can be triggered by events such as an incoming request (file upload).
+
+Since the stream would be too large to parse in a single go, it's instead turned into chunks. These chunks can then be worked with before the entire stream is uploaded. For example, this allows you to start saving a file upload to your disk.
+
+A `buffer` is used to organize these chunks. A buffer is like a bus stop. The stream is the bus, and the buffer is a construct which allows the code to hold multiple chunks, work with them, and then release them when executed.

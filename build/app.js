@@ -39,22 +39,17 @@ var requestListener = function (request, response) {
         // Initialise data so we can update it with our chunk buffer
         var data_1 = { title: "", message: "" };
         // Read the data in the stream that we pass through
+        // Runs each time a chunk is ready to be parsed
         request.on('data', function (chunk) {
             // We use queryStream to parse the chunk into an array of prototype objects
-            console.log("Request is here");
             data_1 = querystring_1.default.parse(chunk.toString());
-            console.log(data_1);
-            console.log("\n");
-            // Append our two inputs to the file
-            // We do this by adding the property from data and then inserting a new line with each entry
-            fs_1.default.appendFileSync("message.txt", "".concat(data_1.title, " \r\n"));
-            fs_1.default.appendFile("message.txt", "".concat(data_1.message, " \r\n"), function (error) {
-                console.log("Error: ".concat(error));
-            });
         });
         // When the post ends, get the string out of the buffer with queryString
         request.on('end', function () {
-            console.log("Parsing the text has finished");
+            // Append our two inputs to the file
+            // We do this by adding the property from data and then inserting a new line with each entry
+            fs_1.default.appendFileSync("message.txt", "".concat(data_1.title, " \r\n"));
+            fs_1.default.appendFileSync("message.txt", "".concat(data_1.message, " \r\n"));
         });
         // If there's an error, showcase it in the query
         request.on('error', function () {
@@ -62,6 +57,7 @@ var requestListener = function (request, response) {
             console.log("\n");
         });
         response.statusCode = 302;
+        response.setHeader("Location", "/");
         return response.end();
     }
     response.setHeader('Content-Type', 'text/html');

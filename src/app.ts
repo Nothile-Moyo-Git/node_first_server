@@ -54,25 +54,23 @@ const requestListener = (request : http.IncomingMessage, response : http.ServerR
         let data : Data | any = {title : "", message : ""};
 
         // Read the data in the stream that we pass through
+        // Runs each time a chunk is ready to be parsed
         request.on('data', (chunk : Buffer) => {
 
             // We use queryStream to parse the chunk into an array of prototype objects
             data = qs.parse(chunk.toString());
 
-            // Append our two inputs to the file
-            // We do this by adding the property from data and then inserting a new line with each entry
-            fs.appendFileSync("message.txt", `${data.title} \r\n`);
-
-            fs.appendFile("message.txt", `${data.message} \r\n`, (error) => {
-                console.log(`Error: ${error}`);
-            });
-
         });
 
         // When the post ends, get the string out of the buffer with queryString
         request.on('end', () => {
-            console.log("Parsing the text has finished");
-            console.log("\n");
+
+            // Append our two inputs to the file
+            // We do this by adding the property from data and then inserting a new line with each entry
+            fs.appendFileSync("message.txt", `${data.title} \r\n`);
+
+            fs.appendFileSync("message.txt", `${data.message} \r\n`);
+
         });
 
         // If there's an error, showcase it in the query
@@ -82,7 +80,7 @@ const requestListener = (request : http.IncomingMessage, response : http.ServerR
         });
 
         response.statusCode = 302;
-
+        response.setHeader("Location", "/");
         return response.end();
     }
 
